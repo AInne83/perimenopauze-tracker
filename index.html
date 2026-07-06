@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Perimenopauze Tracker</title>
+
+<!-- PWA / iOS installatie-ondersteuning -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c5cbf">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Perimenopauze">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <h1 id="topbar-titel">Perimenopauze Tracker</h1>
+</header>
+
+<main id="app">
+
+  <!-- VIEW: Dagelijkse invoer -->
+  <section id="view-invoer" class="view actief">
+    <div class="datum-balk">
+      <button id="dag-vorige" class="datum-nav" aria-label="Vorige dag">&#8249;</button>
+      <button id="datum-label" class="datum-label"></button>
+      <button id="dag-volgende" class="datum-nav" aria-label="Volgende dag">&#8250;</button>
+    </div>
+    <input type="date" id="datum-input" class="datum-input-verborgen">
+
+    <div id="invoer-inhoud"></div>
+  </section>
+
+  <!-- VIEW: Overzicht -->
+  <section id="view-overzicht" class="view">
+    <div id="overzicht-inhoud"></div>
+  </section>
+
+  <!-- VIEW: Data / export -->
+  <section id="view-data" class="view">
+    <div id="data-inhoud"></div>
+  </section>
+
+</main>
+
+<div id="toast" class="toast"></div>
+
+<nav class="bottomnav">
+  <button class="navtab actief" data-view="view-invoer">
+    <span class="navicon">&#9998;</span>
+    <span>Invoer</span>
+  </button>
+  <button class="navtab" data-view="view-overzicht">
+    <span class="navicon">&#128197;</span>
+    <span>Overzicht</span>
+  </button>
+  <button class="navtab" data-view="view-data">
+    <span class="navicon">&#128190;</span>
+    <span>Data</span>
+  </button>
+</nav>
+
+<script src="vendor/chart.umd.min.js"></script>
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="js/symptoms-data.js"></script>
+<script src="js/db.js"></script>
+<script src="js/entry-view.js"></script>
+<script src="js/history-view.js"></script>
+<script src="js/export-xlsx.js"></script>
+<script src="js/backup.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

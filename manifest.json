@@ -1,0 +1,30 @@
+{
+  "name": "Perimenopauze Tracker",
+  "short_name": "Perimenopauze",
+  "description": "Dagelijkse registratie van perimenopauze-klachten en sportactiviteiten, volledig lokaal.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#7c5cbf",
+  "theme_color": "#7c5cbf",
+  "lang": "nl",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
