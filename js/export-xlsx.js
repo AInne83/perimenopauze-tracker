@@ -8,6 +8,7 @@ function bouwExportKolommen() {
     kolommen.push(`${naam} - score (1-5)`);
     kolommen.push(`${naam} - notitie`);
   });
+  kolommen.push("Opmerkingen");
   return kolommen;
 }
 
@@ -23,6 +24,7 @@ function bouwExportRij(dag) {
     rij.push(act.gedaan && act.score ? act.score : "");
     rij.push(act.notitie || "");
   });
+  rij.push(dag.opmerking || "");
   return rij;
 }
 

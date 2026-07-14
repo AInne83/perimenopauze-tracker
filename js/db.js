@@ -28,8 +28,16 @@ function legeDag(datum) {
     datum,
     menstruatie: null,
     klachten: {},
-    activiteiten: {}
+    activiteiten: {},
+    opmerking: ""
   };
+}
+
+// Vult ontbrekende velden aan op oudere dagrecords (bijv. van vóór het opmerkingenveld).
+function migreerDag(dag) {
+  if (dag.opmerking === undefined) dag.opmerking = "";
+  if (!dag.klachten) dag.klachten = {};
+  return dag;
 }
 
 async function getDag(datum) {
@@ -38,7 +46,7 @@ async function getDag(datum) {
     const tx = db.transaction(STORE_NAAM, "readonly");
     const store = tx.objectStore(STORE_NAAM);
     const req = store.get(datum);
-    req.onsuccess = () => resolve(req.result || legeDag(datum));
+    req.onsuccess = () => resolve(migreerDag(req.result || legeDag(datum)));
     req.onerror = () => reject(req.error);
   });
 }
@@ -60,7 +68,7 @@ async function getAlleDagen() {
     const tx = db.transaction(STORE_NAAM, "readonly");
     const store = tx.objectStore(STORE_NAAM);
     const req = store.getAll();
-    req.onsuccess = () => resolve(req.result || []);
+    req.onsuccess = () => resolve((req.result || []).map(migreerDag));
     req.onerror = () => reject(req.error);
   });
 }
@@ -71,6 +79,16 @@ async function vervangAlleDagen(dagen) {
     const tx = db.transaction(STORE_NAAM, "readwrite");
     const store = tx.objectStore(STORE_NAAM);
     dagen.forEach(dag => store.put(dag));
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function wisAlleDagen() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAAM, "readwrite");
+    tx.objectStore(STORE_NAAM).clear();
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });

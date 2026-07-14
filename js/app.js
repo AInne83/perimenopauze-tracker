@@ -25,6 +25,17 @@ function laatsteBackupTekst() {
   return `Laatste backup: ${datum.toLocaleDateString("nl-NL")} ${datum.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}`;
 }
 
+function laatsteExportTekst() {
+  const iso = localStorage.getItem("laatsteExport");
+  if (!iso) return "Nog geen export gemaakt.";
+  const datum = new Date(iso);
+  return `Laatste export: ${datum.toLocaleDateString("nl-NL")} ${datum.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+function markeerExportGemaakt() {
+  localStorage.setItem("laatsteExport", new Date().toISOString());
+}
+
 async function renderDataView() {
   const container = document.getElementById("data-inhoud");
   const alleDagen = await getAlleDagen();
@@ -59,11 +70,21 @@ async function renderDataView() {
         <button class="knop knop-primair" id="btn-xlsx-export">Exporteer naar Excel</button>
       </div>
     </div>
+
+    <div class="sectie sectie-gevaar">
+      <div class="sectie-header"><span>Gevarenzone</span></div>
+      <div class="sectie-body" style="display:block">
+        <p class="data-info">Wist alle ingevoerde dagen op dit toestel, bijvoorbeeld om opnieuw te beginnen na een export.</p>
+        <p class="data-info" id="laatste-export-info">${laatsteExportTekst()}</p>
+        <button class="knop knop-gevaar" id="btn-wis-data">Wis alle data</button>
+      </div>
+    </div>
   `;
 
   document.getElementById("btn-json-export").addEventListener("click", async () => {
     await exporteerJsonBackup();
     localStorage.setItem("laatsteBackup", new Date().toISOString());
+    markeerExportGemaakt();
     document.getElementById("laatste-backup-info").textContent = laatsteBackupTekst();
     toonToast("Backup geëxporteerd");
   });
@@ -85,6 +106,33 @@ async function renderDataView() {
 
   document.getElementById("btn-xlsx-export").addEventListener("click", async () => {
     await exporteerNaarExcel();
+    markeerExportGemaakt();
+    document.getElementById("laatste-export-info").textContent = laatsteExportTekst();
+    toonToast("Excel geëxporteerd");
+  });
+
+  document.getElementById("btn-wis-data").addEventListener("click", async () => {
+    const laatsteExport = localStorage.getItem("laatsteExport");
+
+    let bevestigd;
+    if (!laatsteExport) {
+      bevestigd = confirm(
+        "⚠️ Je hebt nog geen export gemaakt.\n\n" +
+        "Als je nu alle gegevens wist, ben je al je ingevoerde dagen definitief kwijt. " +
+        "Weet je zeker dat je wilt doorgaan zonder eerst te exporteren?"
+      );
+    } else {
+      bevestigd = confirm(
+        `Weet je zeker dat je alle ${alleDagen.length} ingevoerde dag(en) wilt wissen? Dit kan niet ongedaan worden gemaakt.\n\n(${laatsteExportTekst()})`
+      );
+    }
+
+    if (!bevestigd) return;
+
+    await wisAlleDagen();
+    await laadInvoerScherm(huidigeDatum);
+    toonToast("Alle gegevens gewist");
+    renderDataView();
   });
 }
 

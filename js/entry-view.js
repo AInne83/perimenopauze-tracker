@@ -57,6 +57,7 @@ function renderInvoerInhoud() {
     container.appendChild(bouwKlachtenCategorie(cat));
   });
   container.appendChild(bouwActiviteitenSectie());
+  container.appendChild(bouwOpmerkingSectie());
 }
 
 function telIngevuld(namen, dataObj) {
@@ -282,6 +283,32 @@ function bouwActiviteitBlok(naam) {
   });
 
   return blok;
+}
+
+function bouwOpmerkingSectie() {
+  const wrap = document.createElement("div");
+  wrap.className = "sectie";
+
+  const header = document.createElement("div");
+  header.className = "sectie-header";
+  header.innerHTML = `<span>Opmerkingen</span>`;
+  wrap.appendChild(header);
+
+  const body = document.createElement("div");
+  body.className = "sectie-body";
+
+  const veld = document.createElement("textarea");
+  veld.className = "opmerking-veld";
+  veld.placeholder = "Korte aantekeningen over deze dag...";
+  veld.value = huidigeDag.opmerking || "";
+  veld.addEventListener("change", () => {
+    huidigeDag.opmerking = veld.value;
+    bewaarHuidigeDag();
+  });
+  body.appendChild(veld);
+
+  wrap.appendChild(body);
+  return wrap;
 }
 
 function initInvoerNavigatie() {
