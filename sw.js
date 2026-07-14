@@ -1,7 +1,10 @@
 // Service worker: cachet de volledige app-shell zodat de app na de eerste keer laden
 // volledig offline werkt (belangrijk, want er is geen server/back-end).
 
-const CACHE_NAAM = "perimenopauze-tracker-v1";
+// Verhoog dit versienummer bij elke deploy die een gecacht bestand wijzigt.
+// Zonder wijziging in dit bestand ziet Safari geen nieuwe service worker en
+// blijft hij de oude cache voor altijd serveren, ook na volledig herstarten.
+const CACHE_NAAM = "perimenopauze-tracker-v2";
 
 const APP_SHELL = [
   "./",
