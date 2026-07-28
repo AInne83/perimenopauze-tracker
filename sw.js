@@ -4,7 +4,7 @@
 // Verhoog dit versienummer bij elke deploy die een gecacht bestand wijzigt.
 // Zonder wijziging in dit bestand ziet Safari geen nieuwe service worker en
 // blijft hij de oude cache voor altijd serveren, ook na volledig herstarten.
-const CACHE_NAAM = "perimenopauze-tracker-v2";
+const CACHE_NAAM = "lifestyle-tracker-v1";
 
 const APP_SHELL = [
   "./",

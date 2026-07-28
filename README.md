@@ -1,9 +1,10 @@
-# Perimenopauze Tracker
+# Lifestyle Tracker
 
-Een lokale, installeerbare web-app (PWA) om dagelijks perimenopauze-klachten en
-sportactiviteiten bij te houden op je iPhone. Alles draait volledig **client-side**:
-geen server, geen account, geen cloud. Je gegevens blijven op je eigen toestel,
-in de lokale IndexedDB-opslag van je browser.
+Een lokale, installeerbare web-app (PWA) om dagelijks je lifestyle bij te houden
+op je iPhone: hoe je je voelde, slaap, stress, menstruatie, (perimenopauze-)
+klachten en sportactiviteiten. Alles draait volledig **client-side**: geen
+server, geen account, geen cloud. Je gegevens blijven op je eigen toestel, in
+de lokale IndexedDB-opslag van je browser.
 
 ## ⚠️ Belangrijk: lees dit over iOS-opslag
 
@@ -59,14 +60,15 @@ npx serve .
 
 ## Functionaliteit
 
-- **Invoer** — dagelijkse registratie van menstruatiepatroon, klachten
-  (mentaal, emotioneel, lichamelijk, overig) op een schaal van 0–3, en
-  sportactiviteiten (hardlopen, wandelen, zwemmen, krachttraining) met een
-  score 1–5 en optionele notitie. Alles wordt automatisch opgeslagen zodra je
-  een keuze maakt.
+- **Invoer** — dagelijkse check-in (hoe voelde je je, slaapduur, slaapkwaliteit,
+  stress), menstruatie (ja/nee, met patroon bij "ja"), klachten (mentaal,
+  emotioneel, lichamelijk, overig) op een schaal van 0–3, en sportactiviteiten
+  (hardlopen, wandelen, zwemmen, krachttraining) met een score 1–5 en
+  optionele notitie. Alles wordt automatisch opgeslagen zodra je een keuze
+  maakt.
 - **Overzicht** — maandkalender met kleurcodering per dag (op basis van de
   zwaarste klacht die dag) en een grafiek van het verloop van een gekozen
-  klacht over tijd.
+  check-in-metric of klacht over tijd.
 - **Data** — JSON-backup maken/herstellen en export naar Excel (.xlsx).
 
 ## Technisch

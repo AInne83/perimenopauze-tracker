@@ -52,12 +52,114 @@ async function laadInvoerScherm(datumStr) {
 function renderInvoerInhoud() {
   const container = document.getElementById("invoer-inhoud");
   container.innerHTML = "";
+  container.appendChild(bouwCheckinSectie());
   container.appendChild(bouwMenstruatieSectie());
   KLACHTEN_CATEGORIEEN.forEach(cat => {
     container.appendChild(bouwKlachtenCategorie(cat));
   });
   container.appendChild(bouwActiviteitenSectie());
   container.appendChild(bouwOpmerkingSectie());
+}
+
+function bouwCheckinSectie() {
+  const wrap = document.createElement("div");
+  wrap.className = "sectie";
+
+  const header = document.createElement("div");
+  header.className = "sectie-header";
+  header.innerHTML = `<span>Hoe gaat het vandaag?</span>`;
+  wrap.appendChild(header);
+
+  const body = document.createElement("div");
+  body.className = "sectie-body";
+  body.appendChild(bouwSchaalRij("gevoel"));
+  body.appendChild(bouwSlaapuurRij());
+  body.appendChild(bouwSchaalRij("slaapkwaliteit"));
+  body.appendChild(bouwSchaalRij("stress"));
+  wrap.appendChild(body);
+  return wrap;
+}
+
+// Generieke 1-5-knoppenrij voor een LIFESTYLE_METRICS-veld (gevoel, slaapkwaliteit, stress).
+function bouwSchaalRij(metricKey) {
+  const config = LIFESTYLE_METRICS[metricKey];
+
+  const rij = document.createElement("div");
+  rij.className = "klacht-rij";
+
+  const label = document.createElement("span");
+  label.className = "klacht-label";
+  label.textContent = config.label;
+  rij.appendChild(label);
+
+  const scoreWrap = document.createElement("div");
+  scoreWrap.className = "score-knoppen score-knoppen-5";
+
+  const huidigeWaarde = config.getter(huidigeDag);
+
+  for (let waarde = config.min; waarde <= config.max; waarde += config.stap) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "score-knop";
+    btn.textContent = String(waarde);
+    if (huidigeWaarde === waarde) btn.classList.add("actief");
+    btn.addEventListener("click", () => {
+      huidigeDag[metricKey] = waarde;
+      scoreWrap.querySelectorAll(".score-knop").forEach(b => b.classList.remove("actief"));
+      btn.classList.add("actief");
+      bewaarHuidigeDag();
+    });
+    scoreWrap.appendChild(btn);
+  }
+
+  rij.appendChild(scoreWrap);
+  return rij;
+}
+
+function formatteerUren(waarde) {
+  const getal = Number(waarde);
+  const tekst = Number.isInteger(getal) ? String(getal) : String(getal).replace(".", ",");
+  return `${tekst} uur`;
+}
+
+function bouwSlaapuurRij() {
+  const config = LIFESTYLE_METRICS.slaapuren;
+
+  const wrap = document.createElement("div");
+  wrap.className = "slider-rij";
+
+  const kop = document.createElement("div");
+  kop.className = "slider-kop";
+  const labelSpan = document.createElement("span");
+  labelSpan.textContent = config.label;
+  const waardeSpan = document.createElement("span");
+  waardeSpan.className = "slider-waarde";
+  kop.appendChild(labelSpan);
+  kop.appendChild(waardeSpan);
+  wrap.appendChild(kop);
+
+  const slider = document.createElement("input");
+  slider.type = "range";
+  slider.className = "slider-veld";
+  slider.min = String(config.min);
+  slider.max = String(config.max);
+  slider.step = String(config.stap);
+
+  const opgeslagenWaarde = huidigeDag.slaapuren;
+  const standaardWaarde = (config.min + config.max) / 2;
+  slider.value = String(opgeslagenWaarde !== null && opgeslagenWaarde !== undefined ? opgeslagenWaarde : standaardWaarde);
+  waardeSpan.textContent = formatteerUren(slider.value);
+
+  slider.addEventListener("input", () => {
+    waardeSpan.textContent = formatteerUren(slider.value);
+  });
+  slider.addEventListener("change", () => {
+    huidigeDag.slaapuren = Number(slider.value);
+    bewaarHuidigeDag();
+  });
+
+  wrap.appendChild(slider);
+  return wrap;
 }
 
 function telIngevuld(namen, dataObj) {
@@ -70,29 +172,66 @@ function bouwMenstruatieSectie() {
 
   const header = document.createElement("div");
   header.className = "sectie-header";
-  header.innerHTML = `<span>Menstruatiepatroon</span>`;
+  header.innerHTML = `<span>Menstruatie</span>`;
   wrap.appendChild(header);
 
   const body = document.createElement("div");
   body.className = "sectie-body";
 
-  const rij = document.createElement("div");
-  rij.className = "menstruatie-opties";
+  const patroonWrap = document.createElement("div");
+  patroonWrap.className = "menstruatie-patroon";
+  patroonWrap.style.display = huidigeDag.menstruatie.actief === true ? "block" : "none";
+
+  const patroonLabel = document.createElement("div");
+  patroonLabel.className = "activiteit-scorelabel";
+  patroonLabel.textContent = "Patroon";
+  patroonWrap.appendChild(patroonLabel);
+
+  const patroonOpties = document.createElement("div");
+  patroonOpties.className = "menstruatie-opties";
   MENSTRUATIE_OPTIES.forEach(optie => {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "menstruatie-knop";
     btn.textContent = optie;
-    if (huidigeDag.menstruatie === optie) btn.classList.add("actief");
+    if (huidigeDag.menstruatie.patroon === optie) btn.classList.add("actief");
     btn.addEventListener("click", () => {
-      huidigeDag.menstruatie = (huidigeDag.menstruatie === optie) ? null : optie;
+      huidigeDag.menstruatie.patroon = (huidigeDag.menstruatie.patroon === optie) ? null : optie;
       bewaarHuidigeDag();
-      wrap.querySelectorAll(".menstruatie-knop").forEach(b => b.classList.remove("actief"));
-      if (huidigeDag.menstruatie === optie) btn.classList.add("actief");
+      patroonOpties.querySelectorAll(".menstruatie-knop").forEach(b => b.classList.remove("actief"));
+      if (huidigeDag.menstruatie.patroon === optie) btn.classList.add("actief");
     });
-    rij.appendChild(btn);
+    patroonOpties.appendChild(btn);
   });
-  body.appendChild(rij);
+  patroonWrap.appendChild(patroonOpties);
+
+  const jaNeeRij = document.createElement("div");
+  jaNeeRij.className = "menstruatie-opties";
+  [["Ja", true], ["Nee", false]].forEach(([label, waarde]) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "menstruatie-knop";
+    btn.textContent = label;
+    if (huidigeDag.menstruatie.actief === waarde) btn.classList.add("actief");
+    btn.addEventListener("click", () => {
+      const nieuweWaarde = (huidigeDag.menstruatie.actief === waarde) ? null : waarde;
+      huidigeDag.menstruatie.actief = nieuweWaarde;
+      if (nieuweWaarde !== true) huidigeDag.menstruatie.patroon = null;
+      bewaarHuidigeDag();
+
+      jaNeeRij.querySelectorAll(".menstruatie-knop").forEach(b => b.classList.remove("actief"));
+      if (nieuweWaarde === waarde) btn.classList.add("actief");
+
+      patroonWrap.style.display = nieuweWaarde === true ? "block" : "none";
+      if (nieuweWaarde !== true) {
+        patroonOpties.querySelectorAll(".menstruatie-knop").forEach(b => b.classList.remove("actief"));
+      }
+    });
+    jaNeeRij.appendChild(btn);
+  });
+
+  body.appendChild(jaNeeRij);
+  body.appendChild(patroonWrap);
   wrap.appendChild(body);
   return wrap;
 }

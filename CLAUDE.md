@@ -4,11 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Wat dit is
 
-Perimenopauze Tracker: een lokale, installeerbare PWA (iOS-focused) om dagelijks
-perimenopauze-klachten en sportactiviteiten bij te houden. Volledig client-side —
+Lifestyle Tracker: een lokale, installeerbare PWA (iOS-focused) om dagelijks je
+algehele lifestyle bij te houden — dagelijkse check-in (gevoel, slaap, stress),
+menstruatie, (perimenopauze-)klachten en sportactiviteiten. Volledig client-side —
 geen server, geen account, geen build-stap. Vanilla HTML/CSS/JS, data in IndexedDB.
 UI-tekst, code comments en variabele/functienamen zijn in het Nederlands; blijf
 consistent met die taal wanneer je nieuwe UI-strings of comments toevoegt.
+
+Intern (IndexedDB-databasenaam `DB_NAAM` in `db.js`, en de mapnaam
+`perimenopauze-tracker`) is de oorspronkelijke, perimenopauze-specifieke naam
+bewust blijven staan — wijzigen zou bestaande lokale data onbereikbaar maken
+onder een nieuwe databasenaam. Alleen de gebruikersgerichte branding (titel,
+app-naam, README) is generieker gemaakt.
 
 ## Development commands
 
@@ -28,7 +35,7 @@ changes are tested by reloading in the browser.
 
 `sw.js` precaches the entire app shell (`APP_SHELL` array) for offline use. **Any
 change to a cached file requires bumping `CACHE_NAAM` in `sw.js`** (e.g.
-`perimenopauze-tracker-v2` → `v3`), otherwise installed/iOS clients will keep
+`lifestyle-tracker-v1` → `v2`), otherwise installed/iOS clients will keep
 serving stale cached files indefinitely — Safari won't detect the new service
 worker without a change to `sw.js` itself. If you add a new file to the app,
 also add it to the `APP_SHELL` array.
@@ -55,7 +62,17 @@ One IndexedDB record per calendar day, store `dagen` (db.js), keyed by `datum`
 (`YYYY-MM-DD` string):
 
 ```js
-{ datum, menstruatie: string|null, klachten: {naam: 0-3}, activiteiten: {naam: {gedaan, score, notitie}}, opmerking: string }
+{
+  datum,
+  gevoel: 1-5|null,
+  slaapuren: 5-9 (step 0.5)|null,
+  slaapkwaliteit: 1-5|null,
+  stress: 1-5|null,
+  menstruatie: { actief: boolean|null, patroon: string|null },
+  klachten: {naam: 0-3},
+  activiteiten: {naam: {gedaan, score, notitie}},
+  opmerking: string
+}
 ```
 
 - `klachten` (complaints) only stores keys with a score > 0 — a score of 0 deletes
@@ -65,9 +82,20 @@ One IndexedDB record per calendar day, store `dagen` (db.js), keyed by `datum`
   explicitly commented as: **do not change this list without accounting for
   already-stored data** — renaming/removing an entry orphans historical scores
   that were keyed by name (not by id).
+- The four daily check-in fields (`gevoel`, `slaapuren`, `slaapkwaliteit`,
+  `stress`) are described once in `LIFESTYLE_METRICS` (symptoms-data.js) —
+  label, min/max/step and a getter — and consumed by both the input UI
+  (entry-view.js's `bouwSchaalRij`/`bouwSlaapuurRij`) and the Overzicht chart
+  (history-view.js's `tekenGrafiek`). Add new check-in fields there, not by
+  hardcoding scales in multiple files.
+- `menstruatie` is two-step: `actief` (true/false/null = unanswered) gates
+  whether `patroon` (one of `MENSTRUATIE_OPTIES`) is asked/shown at all;
+  picking "Nee" or toggling `actief` off always clears `patroon`.
 - `migreerDag()` in db.js backfills fields missing on older records (e.g. an old
-  record without `opmerking`). When adding a new field to the day record, add a
-  migration line here rather than assuming the field always exists.
+  record without `opmerking`, or a pre-rebrand record where `menstruatie` was
+  still a plain string/null instead of the `{actief, patroon}` object). When
+  adding a new field to the day record, add a migration line here rather than
+  assuming the field always exists.
 
 ### The three views
 
@@ -75,14 +103,18 @@ One IndexedDB record per calendar day, store `dagen` (db.js), keyed by `datum`
 `#view-data`) via `schakelNaarView()`, driven by the bottom nav. Each view's
 content is rendered on demand (not statically in HTML):
 
-- **Invoer** (entry-view.js) — today/selected day's form: menstruation buttons,
-  collapsible complaint categories with 0–3 score buttons, activities with a
-  1–5 score + note, and a notes textarea. Every interaction immediately calls
-  `bewaarHuidigeDag()` → `saveDag()` — there is no explicit save button, and no
-  debounce (text inputs save on `change`, buttons save on `click`).
+- **Invoer** (entry-view.js) — today/selected day's form: a daily check-in
+  section (gevoel/slaapuren/slaapkwaliteit/stress) first, then two-step
+  menstruation buttons (ja/nee, then pattern), collapsible complaint
+  categories with 0–3 score buttons, activities with a 1–5 score + note, and
+  a notes textarea. Every interaction immediately calls `bewaarHuidigeDag()`
+  → `saveDag()` — there is no explicit save button, and no debounce (text
+  inputs and the sleep slider save on `change`, buttons save on `click`).
 - **Overzicht** (history-view.js) — month calendar colored by each day's worst
-  complaint severity (`ernstVanDag`), plus a Chart.js line graph of a single
-  selected complaint's score over the last 90 entries.
+  complaint severity (`ernstVanDag`, complaints only — not the check-in
+  metrics), plus a Chart.js line graph of a single selected metric (one of
+  `LIFESTYLE_METRICS` or a complaint, grouped via `<optgroup>` in the select)
+  over the last 90 entries with matching data.
 - **Data** (rendered inline in `app.js`'s `renderDataView()`) — JSON backup
   export/import (backup.js) and Excel export (export-xlsx.js), plus a
   "wipe all data" danger action guarded by `confirm()` and by whether a

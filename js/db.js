@@ -26,7 +26,11 @@ function openDB() {
 function legeDag(datum) {
   return {
     datum,
-    menstruatie: null,
+    gevoel: null,
+    slaapuren: null,
+    slaapkwaliteit: null,
+    stress: null,
+    menstruatie: { actief: null, patroon: null },
     klachten: {},
     activiteiten: {},
     opmerking: ""
@@ -37,6 +41,15 @@ function legeDag(datum) {
 function migreerDag(dag) {
   if (dag.opmerking === undefined) dag.opmerking = "";
   if (!dag.klachten) dag.klachten = {};
+  if (dag.gevoel === undefined) dag.gevoel = null;
+  if (dag.slaapuren === undefined) dag.slaapuren = null;
+  if (dag.slaapkwaliteit === undefined) dag.slaapkwaliteit = null;
+  if (dag.stress === undefined) dag.stress = null;
+  if (typeof dag.menstruatie === "string") {
+    dag.menstruatie = { actief: true, patroon: dag.menstruatie };
+  } else if (!dag.menstruatie) {
+    dag.menstruatie = { actief: null, patroon: null };
+  }
   return dag;
 }
 

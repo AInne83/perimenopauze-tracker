@@ -1,7 +1,7 @@
 {
-  "name": "Perimenopauze Tracker",
-  "short_name": "Perimenopauze",
-  "description": "Dagelijkse registratie van perimenopauze-klachten en sportactiviteiten, volledig lokaal.",
+  "name": "Lifestyle Tracker",
+  "short_name": "Lifestyle",
+  "description": "Dagelijkse registratie van je gevoel, slaap, stress, menstruatie, klachten en sportactiviteiten, volledig lokaal.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

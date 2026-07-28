@@ -21,7 +21,7 @@ async function exporteerJsonBackup() {
     try {
       await navigator.share({
         files: [file],
-        title: "Perimenopauze backup",
+        title: "Lifestyle Tracker backup",
         text: "JSON-backup van al je gegevens"
       });
       return;

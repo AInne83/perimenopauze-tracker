@@ -3,7 +3,7 @@
 let overzichtJaar = new Date().getFullYear();
 let overzichtMaand = new Date().getMonth(); // 0-11
 let overzichtChart = null;
-let overzichtGeselecteerdeKlacht = null;
+let overzichtGeselecteerdeMetric = null;
 
 const MAAND_NAMEN = [
   "januari", "februari", "maart", "april", "mei", "juni",
@@ -108,7 +108,7 @@ function bouwKalenderGrid(dagenMap) {
     nrSpan.textContent = String(dagNr);
     cel.appendChild(nrSpan);
 
-    if (dag && dag.menstruatie) {
+    if (dag && dag.menstruatie && dag.menstruatie.actief) {
       const stip = document.createElement("span");
       stip.className = "kalender-stip";
       cel.appendChild(stip);
@@ -150,22 +150,38 @@ function bouwGrafiekSectie(alleDagen) {
 
   const titel = document.createElement("h2");
   titel.className = "grafiek-titel";
-  titel.textContent = "Verloop per klacht";
+  titel.textContent = "Verloop over tijd";
   wrap.appendChild(titel);
 
   const select = document.createElement("select");
   select.className = "klacht-select";
+
+  const checkinGroep = document.createElement("optgroup");
+  checkinGroep.label = "Dagelijkse check-in";
+  Object.keys(LIFESTYLE_METRICS).forEach(key => {
+    const optie = document.createElement("option");
+    optie.value = key;
+    optie.textContent = LIFESTYLE_METRICS[key].label;
+    checkinGroep.appendChild(optie);
+  });
+  select.appendChild(checkinGroep);
+
+  const klachtenGroep = document.createElement("optgroup");
+  klachtenGroep.label = "Klachten";
   const alleNamen = alleKlachtenPlat();
-  if (!overzichtGeselecteerdeKlacht) overzichtGeselecteerdeKlacht = alleNamen[0];
   alleNamen.forEach(naam => {
     const optie = document.createElement("option");
     optie.value = naam;
     optie.textContent = naam;
-    if (naam === overzichtGeselecteerdeKlacht) optie.selected = true;
-    select.appendChild(optie);
+    klachtenGroep.appendChild(optie);
   });
+  select.appendChild(klachtenGroep);
+
+  if (!overzichtGeselecteerdeMetric) overzichtGeselecteerdeMetric = Object.keys(LIFESTYLE_METRICS)[0];
+  select.value = overzichtGeselecteerdeMetric;
+
   select.addEventListener("change", () => {
-    overzichtGeselecteerdeKlacht = select.value;
+    overzichtGeselecteerdeMetric = select.value;
     tekenGrafiek(alleDagen);
   });
   wrap.appendChild(select);
@@ -185,13 +201,20 @@ function tekenGrafiek(alleDagen) {
   const canvas = document.getElementById("grafiek-canvas");
   if (!canvas) return;
 
+  const metric = LIFESTYLE_METRICS[overzichtGeselecteerdeMetric];
+  const waardeVanDag = metric
+    ? metric.getter
+    : (d) => d.klachten ? d.klachten[overzichtGeselecteerdeMetric] : undefined;
+  const asGrenzen = metric ? { min: metric.min, max: metric.max, stepSize: metric.stap } : { min: 0, max: 3, stepSize: 1 };
+  const label = metric ? metric.label : overzichtGeselecteerdeMetric;
+
   const gesorteerd = alleDagen
-    .filter(d => d.klachten && d.klachten[overzichtGeselecteerdeKlacht] !== undefined)
+    .filter(d => waardeVanDag(d) !== undefined && waardeVanDag(d) !== null)
     .sort((a, b) => a.datum.localeCompare(b.datum))
     .slice(-90);
 
   const labels = gesorteerd.map(d => d.datum.slice(5));
-  const data = gesorteerd.map(d => d.klachten[overzichtGeselecteerdeKlacht]);
+  const data = gesorteerd.map(d => waardeVanDag(d));
 
   if (overzichtChart) overzichtChart.destroy();
 
@@ -200,7 +223,7 @@ function tekenGrafiek(alleDagen) {
     data: {
       labels,
       datasets: [{
-        label: overzichtGeselecteerdeKlacht,
+        label,
         data,
         borderColor: "#7c5cbf",
         backgroundColor: "rgba(124,92,191,0.15)",
@@ -213,11 +236,7 @@ function tekenGrafiek(alleDagen) {
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        y: {
-          min: 0,
-          max: 3,
-          ticks: { stepSize: 1 }
-        }
+        y: asGrenzen
       },
       plugins: {
         legend: { display: false }
@@ -230,6 +249,6 @@ function tekenGrafiek(alleDagen) {
     ctx.font = "14px sans-serif";
     ctx.fillStyle = "#888";
     ctx.textAlign = "center";
-    ctx.fillText("Nog geen gegevens voor deze klacht", canvas.width / 2, canvas.height / 2);
+    ctx.fillText("Nog geen gegevens voor deze selectie", canvas.width / 2, canvas.height / 2);
   }
 }

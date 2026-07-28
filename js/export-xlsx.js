@@ -1,7 +1,15 @@
 // Excel-export (.xlsx) van alle ingevoerde dagen, via lokaal gebundelde SheetJS-library.
 
 function bouwExportKolommen() {
-  const kolommen = ["Datum", "Menstruatiepatroon"];
+  const kolommen = [
+    "Datum",
+    "Hoe voelde je je (1-5)",
+    "Slaapuren",
+    "Slaapkwaliteit (1-5)",
+    "Stress (1-5)",
+    "Menstruatie (ja/nee)",
+    "Menstruatiepatroon"
+  ];
   alleKlachtenPlat().forEach(naam => kolommen.push(naam));
   ACTIVITEITEN.forEach(naam => {
     kolommen.push(`${naam} - gedaan`);
@@ -13,7 +21,16 @@ function bouwExportKolommen() {
 }
 
 function bouwExportRij(dag) {
-  const rij = [dag.datum, dag.menstruatie || ""];
+  const menstruatie = dag.menstruatie || {};
+  const rij = [
+    dag.datum,
+    dag.gevoel === undefined || dag.gevoel === null ? "" : dag.gevoel,
+    dag.slaapuren === undefined || dag.slaapuren === null ? "" : dag.slaapuren,
+    dag.slaapkwaliteit === undefined || dag.slaapkwaliteit === null ? "" : dag.slaapkwaliteit,
+    dag.stress === undefined || dag.stress === null ? "" : dag.stress,
+    menstruatie.actief === true ? "Ja" : menstruatie.actief === false ? "Nee" : "",
+    menstruatie.patroon || ""
+  ];
   alleKlachtenPlat().forEach(naam => {
     const score = dag.klachten ? dag.klachten[naam] : undefined;
     rij.push(score === undefined || score === null ? "" : score);
@@ -48,7 +65,7 @@ async function genereerExcelBlob() {
 function exportBestandsnaam(extensie) {
   const nu = new Date();
   const datumStr = toDatumString(nu);
-  return `perimenopauze-export-${datumStr}.${extensie}`;
+  return `lifestyle-export-${datumStr}.${extensie}`;
 }
 
 async function exporteerNaarExcel() {
@@ -60,8 +77,8 @@ async function exporteerNaarExcel() {
     try {
       await navigator.share({
         files: [file],
-        title: "Perimenopauze export",
-        text: "Excel-export van klachten en activiteiten"
+        title: "Lifestyle Tracker export",
+        text: "Excel-export van je dagelijkse check-in, klachten en activiteiten"
       });
       return;
     } catch (err) {
