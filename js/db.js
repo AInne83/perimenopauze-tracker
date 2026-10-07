@@ -30,6 +30,8 @@ function legeDag(datum) {
     slaapuren: null,
     slaapkwaliteit: null,
     stress: null,
+    glazenWijn: null,
+    supplementen: {},
     menstruatie: { actief: null, patroon: null },
     klachten: {},
     activiteiten: {},
@@ -45,6 +47,8 @@ function migreerDag(dag) {
   if (dag.slaapuren === undefined) dag.slaapuren = null;
   if (dag.slaapkwaliteit === undefined) dag.slaapkwaliteit = null;
   if (dag.stress === undefined) dag.stress = null;
+  if (dag.glazenWijn === undefined) dag.glazenWijn = null;
+  if (!dag.supplementen) dag.supplementen = {};
   if (typeof dag.menstruatie === "string") {
     dag.menstruatie = { actief: true, patroon: dag.menstruatie };
   } else if (!dag.menstruatie) {

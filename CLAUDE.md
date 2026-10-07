@@ -68,6 +68,8 @@ One IndexedDB record per calendar day, store `dagen` (db.js), keyed by `datum`
   slaapuren: 5-9 (step 0.5)|null,
   slaapkwaliteit: 1-5|null,
   stress: 1-5|null,
+  glazenWijn: 0-7|null,
+  supplementen: {naam: true},
   menstruatie: { actief: boolean|null, patroon: string|null },
   klachten: {naam: 0-3},
   activiteiten: {naam: {gedaan, score, notitie}},
@@ -82,12 +84,17 @@ One IndexedDB record per calendar day, store `dagen` (db.js), keyed by `datum`
   explicitly commented as: **do not change this list without accounting for
   already-stored data** — renaming/removing an entry orphans historical scores
   that were keyed by name (not by id).
-- The four daily check-in fields (`gevoel`, `slaapuren`, `slaapkwaliteit`,
-  `stress`) are described once in `LIFESTYLE_METRICS` (symptoms-data.js) —
-  label, min/max/step and a getter — and consumed by both the input UI
-  (entry-view.js's `bouwSchaalRij`/`bouwSlaapuurRij`) and the Overzicht chart
-  (history-view.js's `tekenGrafiek`). Add new check-in fields there, not by
-  hardcoding scales in multiple files.
+- The daily check-in fields (`gevoel`, `slaapuren`, `slaapkwaliteit`,
+  `stress`, `glazenWijn`) are described once in `LIFESTYLE_METRICS`
+  (symptoms-data.js) — label, min/max/step and a getter — and consumed by both
+  the input UI (entry-view.js's `bouwSchaalRij`/`bouwSlaapuurRij`) and the
+  Overzicht chart (history-view.js's `tekenGrafiek`). Add new check-in fields
+  there, not by hardcoding scales in multiple files. `bouwSchaalRij` puts rows
+  with more than 5 buttons (like 0-7 glazen wijn) under the label at full
+  width instead of beside it.
+- `supplementen` lists the `SUPPLEMENTEN` (symptoms-data.js) taken that day, as
+  `{naam: true}`; unchecking deletes the key (same "only store what's set"
+  idea as `klachten`). Keyed by name — same rename caveat as above.
 - `menstruatie` is two-step: `actief` (true/false/null = unanswered) gates
   whether `patroon` (one of `MENSTRUATIE_OPTIES`) is asked/shown at all;
   picking "Nee" or toggling `actief` off always clears `patroon`.
@@ -104,7 +111,8 @@ One IndexedDB record per calendar day, store `dagen` (db.js), keyed by `datum`
 content is rendered on demand (not statically in HTML):
 
 - **Invoer** (entry-view.js) — today/selected day's form: a daily check-in
-  section (gevoel/slaapuren/slaapkwaliteit/stress) first, then two-step
+  section (gevoel/slaapuren/slaapkwaliteit/stress/glazen wijn) first, a
+  supplements checklist, then two-step
   menstruation buttons (ja/nee, then pattern), collapsible complaint
   categories with 0–3 score buttons, activities with a 1–5 score + note, and
   a notes textarea. Every interaction immediately calls `bewaarHuidigeDag()`

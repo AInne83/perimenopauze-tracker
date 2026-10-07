@@ -7,9 +7,10 @@ function bouwExportKolommen() {
     "Slaapuren",
     "Slaapkwaliteit (1-5)",
     "Stress (1-5)",
-    "Menstruatie (ja/nee)",
-    "Menstruatiepatroon"
+    "Glazen wijn (0-7)"
   ];
+  SUPPLEMENTEN.forEach(naam => kolommen.push(`Supplement - ${naam}`));
+  kolommen.push("Menstruatie (ja/nee)", "Menstruatiepatroon");
   alleKlachtenPlat().forEach(naam => kolommen.push(naam));
   ACTIVITEITEN.forEach(naam => {
     kolommen.push(`${naam} - gedaan`);
@@ -28,9 +29,15 @@ function bouwExportRij(dag) {
     dag.slaapuren === undefined || dag.slaapuren === null ? "" : dag.slaapuren,
     dag.slaapkwaliteit === undefined || dag.slaapkwaliteit === null ? "" : dag.slaapkwaliteit,
     dag.stress === undefined || dag.stress === null ? "" : dag.stress,
+    dag.glazenWijn === undefined || dag.glazenWijn === null ? "" : dag.glazenWijn
+  ];
+  SUPPLEMENTEN.forEach(naam => {
+    rij.push(dag.supplementen && dag.supplementen[naam] ? "Ja" : "");
+  });
+  rij.push(
     menstruatie.actief === true ? "Ja" : menstruatie.actief === false ? "Nee" : "",
     menstruatie.patroon || ""
-  ];
+  );
   alleKlachtenPlat().forEach(naam => {
     const score = dag.klachten ? dag.klachten[naam] : undefined;
     rij.push(score === undefined || score === null ? "" : score);

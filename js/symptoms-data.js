@@ -120,7 +120,18 @@ const ACTIVITEITEN = [
   "Hardlopen",
   "Wandelen",
   "Zwemmen",
-  "Krachttraining"
+  "Krachttraining",
+  "Touwtje springen"
+];
+
+// Supplementen die dagelijks als genomen/niet genomen worden aangevinkt.
+// Net als klachten/activiteiten opgeslagen op naam: niet hernoemen zonder
+// rekening te houden met reeds opgeslagen data.
+const SUPPLEMENTEN = [
+  "Omega 3",
+  "Vitamine D3/K2",
+  "Magnesium",
+  "B12"
 ];
 
 // Dagelijkse check-in metrics: single source of truth voor label, schaal en
@@ -130,7 +141,8 @@ const LIFESTYLE_METRICS = {
   gevoel: { label: "Hoe voelde je je", min: 1, max: 5, stap: 1, getter: d => d.gevoel },
   slaapuren: { label: "Slaapuren", min: 5, max: 9, stap: 0.5, getter: d => d.slaapuren },
   slaapkwaliteit: { label: "Slaapkwaliteit", min: 1, max: 5, stap: 1, getter: d => d.slaapkwaliteit },
-  stress: { label: "Stress", min: 1, max: 5, stap: 1, getter: d => d.stress }
+  stress: { label: "Stress", min: 1, max: 5, stap: 1, getter: d => d.stress },
+  glazenWijn: { label: "Glazen wijn", min: 0, max: 7, stap: 1, getter: d => d.glazenWijn }
 };
 
 // Helper: platte lijst van alle klachten (voor export-kolommen), in vaste volgorde.

@@ -61,10 +61,11 @@ npx serve .
 ## Functionaliteit
 
 - **Invoer** — dagelijkse check-in (hoe voelde je je, slaapduur, slaapkwaliteit,
-  stress), menstruatie (ja/nee, met patroon bij "ja"), klachten (mentaal,
+  stress, glazen wijn), supplementen (omega 3, vitamine D3/K2, magnesium,
+  B12), menstruatie (ja/nee, met patroon bij "ja"), klachten (mentaal,
   emotioneel, lichamelijk, overig) op een schaal van 0–3, en sportactiviteiten
-  (hardlopen, wandelen, zwemmen, krachttraining) met een score 1–5 en
-  optionele notitie. Alles wordt automatisch opgeslagen zodra je een keuze
+  (hardlopen, wandelen, zwemmen, krachttraining, touwtje springen) met een
+  score 1–5 en optionele notitie. Alles wordt automatisch opgeslagen zodra je een keuze
   maakt.
 - **Overzicht** — maandkalender met kleurcodering per dag (op basis van de
   zwaarste klacht die dag) en een grafiek van het verloop van een gekozen

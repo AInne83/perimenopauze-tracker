@@ -53,6 +53,7 @@ function renderInvoerInhoud() {
   const container = document.getElementById("invoer-inhoud");
   container.innerHTML = "";
   container.appendChild(bouwCheckinSectie());
+  container.appendChild(bouwSupplementenSectie());
   container.appendChild(bouwMenstruatieSectie());
   KLACHTEN_CATEGORIEEN.forEach(cat => {
     container.appendChild(bouwKlachtenCategorie(cat));
@@ -76,6 +77,51 @@ function bouwCheckinSectie() {
   body.appendChild(bouwSlaapuurRij());
   body.appendChild(bouwSchaalRij("slaapkwaliteit"));
   body.appendChild(bouwSchaalRij("stress"));
+  body.appendChild(bouwSchaalRij("glazenWijn"));
+  wrap.appendChild(body);
+  return wrap;
+}
+
+function bouwSupplementenSectie() {
+  const wrap = document.createElement("div");
+  wrap.className = "sectie";
+
+  const header = document.createElement("div");
+  header.className = "sectie-header";
+  header.innerHTML = `<span>Supplementen</span>`;
+  wrap.appendChild(header);
+
+  const body = document.createElement("div");
+  body.className = "sectie-body";
+
+  SUPPLEMENTEN.forEach(naam => {
+    const blok = document.createElement("div");
+    blok.className = "activiteit-blok";
+
+    const koprij = document.createElement("label");
+    koprij.className = "activiteit-koprij";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = !!huidigeDag.supplementen[naam];
+    const naamSpan = document.createElement("span");
+    naamSpan.textContent = naam;
+    koprij.appendChild(checkbox);
+    koprij.appendChild(naamSpan);
+    blok.appendChild(koprij);
+
+    // Alleen genomen supplementen worden bewaard (zoals bij klachten met score > 0).
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) {
+        huidigeDag.supplementen[naam] = true;
+      } else {
+        delete huidigeDag.supplementen[naam];
+      }
+      bewaarHuidigeDag();
+    });
+
+    body.appendChild(blok);
+  });
+
   wrap.appendChild(body);
   return wrap;
 }
@@ -84,8 +130,12 @@ function bouwCheckinSectie() {
 function bouwSchaalRij(metricKey) {
   const config = LIFESTYLE_METRICS[metricKey];
 
+  // Meer dan 5 knoppen passen niet naast het label op een telefoon: dan eronder, over de volle breedte.
+  const aantalKnoppen = Math.round((config.max - config.min) / config.stap) + 1;
+  const breed = aantalKnoppen > 5;
+
   const rij = document.createElement("div");
-  rij.className = "klacht-rij";
+  rij.className = "klacht-rij" + (breed ? " klacht-rij-breed" : "");
 
   const label = document.createElement("span");
   label.className = "klacht-label";
@@ -93,7 +143,7 @@ function bouwSchaalRij(metricKey) {
   rij.appendChild(label);
 
   const scoreWrap = document.createElement("div");
-  scoreWrap.className = "score-knoppen score-knoppen-5";
+  scoreWrap.className = "score-knoppen" + (breed ? "" : " score-knoppen-5");
 
   const huidigeWaarde = config.getter(huidigeDag);
 
